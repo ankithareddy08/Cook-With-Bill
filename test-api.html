@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test - Cook with Bill</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #1a1a2e;
+            color: #eaeaea;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #10b981;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .test-panel {
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .test-panel h2 {
+            color: #3b82f6;
+            font-size: 18px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #0f3460;
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        input, select {
+            background: #0f3460;
+            border: 1px solid #533483;
+            color: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            background: #0f3460;
+            border: 1px solid #533483;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .status.loading {
+            background: #f59e0b;
+            color: #78350f;
+        }
+        
+        .status.success {
+            background: #10b981;
+            color: #064e3b;
+        }
+        
+        .status.error {
+            background: #ef4444;
+            color: #7f1d1d;
+        }
+        
+        .instructions {
+            background: #0f3460;
+            border-left: 4px solid #10b981;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .instructions h3 {
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+        
+        .instructions li {
+            margin-left: 20px;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #533483;
+        }
+        
+        th {
+            background: #0f3460;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background: #1a1a2e;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🧪 Spoonacular API Test</h1>
+    
+    <div class="instructions">
+        <h3>📖 How to Use:</h3>
+        <ol>
+            <li>This tool tests if the Spoonacular API is working correctly</li>
+            <li>Choose a test type from the dropdown below</li>
+            <li>Click the test button and watch the results</li>
+            <li>If tests pass, the API is working fine - the issue is in the app</li>
+            <li>If tests fail, check your API key or network connection</li>
+        </ol>
+    </div>
+    
+    <div class="test-panel">
+        <h2>🔌 Test Configuration</h2>
+        
+        <div class="input-group">
+            <select id="testType">
+                <option value="ingredients">Test: Find by Ingredients (Tomato)</option>
+                <option value="search">Test: Search Recipes (Pasta)</option>
+                <option value="details">Test: Recipe Details (716627)</option>
+                <option value="custom-ingredients">Custom: Your Ingredients</option>
+                <option value="custom-search">Custom: Search Query</option>
+            </select>
+        </div>
+        
+        <div id="customInput" style="display: none;">
+            <div class="input-group">
+                <input type="text" id="customValue" placeholder="Enter ingredients (comma-separated) or search query">
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <button onclick="runTest()">🚀 Run Test</button>
+            <button onclick="clearResult()" style="background: #475569;">🗑️ Clear</button>
+        </div>
+        
+        <div id="status" style="display: none;"></div>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-panel">
+        <h2>📊 Quick Info</h2>
+        <table>
+            <tr>
+                <th>Configuration</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>API Base URL</td>
+                <td>https://api.spoonacular.com</td>
+            </tr>
+            <tr>
+                <td>API Key</td>
+                <td><code id="apiKeyDisplay">Loading...</code></td>
+            </tr>
+            <tr>
+                <td>API Key Valid</td>
+                <td><span id="apiKeyValid">Checking...</span></td>
+            </tr>
+            <tr>
+                <td>Ingredients Endpoint</td>
+                <td>/recipes/findByIngredients</td>
+            </tr>
+            <tr>
+                <td>Search Endpoint</td>
+                <td>/recipes/complexSearch</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script type="module" src="src/test-api.js"></script> <!-- module handles logic -->
+                showStatus(`❌ API Error: ${response.status}`, 'error');
+                showResult(JSON.stringify(data, null, 2));
+                return;
+            }
+            
+            const count = Array.isArray(data) ? data.length : (data.results?.length || 'N/A');
+            showStatus(`✓ Success! Got response with ${count} items`, 'success');
+            showResult(JSON.stringify(data, null, 2));
+            
+        } catch (error) {
+            showStatus(`❌ Error: ${error.message}`, 'error');
+            showResult(error.stack);
+        }
+    }
+    
+    // Initialize info
+    window.addEventListener('load', function() {
+        // Show API key (masked)
+        const masked = SPOONACULAR_API_KEY.substring(0, 8) + '***' + SPOONACULAR_API_KEY.substring(-4);
+        document.getElementById('apiKeyDisplay').textContent = masked;
+        
+        // Check if valid - use isApiKeyValid() function from config.js
+        const isValid = typeof isApiKeyValid === 'function' ? isApiKeyValid() : (SPOONACULAR_API_KEY !== 'YOUR_API_KEY_HERE' && SPOONACULAR_API_KEY.length > 20);
+        document.getElementById('apiKeyValid').innerHTML = isValid ? 
+            '<span style="color: #10b981;">✓ Valid</span>' : 
+            '<span style="color: #ef4444;">✗ Not configured</span>';
+    });
+</script>
+</body>
+</html>

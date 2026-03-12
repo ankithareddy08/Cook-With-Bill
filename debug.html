@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cook with Bill - Debug Console</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Monaco', monospace;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #10b981;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .panel {
+            background: #1a1f35;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .panel h2 {
+            color: #3b82f6;
+            font-size: 16px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 8px;
+        }
+        
+        .checks {
+            list-style: none;
+        }
+        
+        .checks li {
+            padding: 8px;
+            margin: 4px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .check-pass {
+            color: #10b981;
+        }
+        
+        .check-fail {
+            color: #ef4444;
+        }
+        
+        .check-warn {
+            color: #f59e0b;
+        }
+        
+        .indicator {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .log-output {
+            background: #000a0f;
+            border: 1px solid #064e3b;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 12px;
+        }
+        
+        .log-line {
+            padding: 2px 0;
+            font-size: 11px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        button.danger {
+            background: #ef4444;
+        }
+        
+        button.danger:hover {
+            background: #dc2626;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔧 Cook with Bill - Debug Console</h1>
+    
+    <div class="panel">
+        <h2>📋 System Checks</h2>
+        <ul class="checks">
+            <li id="check-js">
+                <span class="indicator">?</span>
+                <span>JavaScript Enabled</span>
+            </li>
+            <li id="check-logger">
+                <span class="indicator">?</span>
+                <span>Logger Object Available</span>
+            </li>
+            <li id="check-config">
+                <span class="indicator">?</span>
+                <span>Config Loaded</span>
+            </li>
+            <li id="check-api-key">
+                <span class="indicator">?</span>
+                <span>API Key Valid: <code id="api-key-status">unknown</code></span>
+            </li>
+            <li id="check-app">
+                <span class="indicator">?</span>
+                <span>App State Initialized</span>
+            </li>
+            <li id="check-dom">
+                <span class="indicator">?</span>
+                <span>DOM Elements Found: <code id="dom-count">0</code></span>
+            </li>
+        </ul>
+        
+        <div class="button-group">
+            <button onclick="runDiagnostics()">🔍 Run Full Diagnostics</button>
+            <button onclick="testApiCall()">🌐 Test API Call</button>
+            <button onclick="clearLogs()" class="danger">🗑 Clear Logs</button>
+        </div>
+    </div>
+    
+    <div class="panel">
+        <h2>📊 Console Output</h2>
+        <div class="log-output" id="log-output">
+            <div class="log-line">Waiting for diagnostics...</div>
+        </div>
+    </div>
+    
+    <div class="panel">
+        <h2>📖 How to Use This Debug Console</h2>
+        <ul class="checks">
+            <li style="background: none; border: none;">
+                1. Open the <code>Cook with Bill</code> recipe app in another tab
+            </li>
+            <li style="background: none; border: none;">
+                2. Interact with the app (click ingredients, search, etc)
+            </li>
+            <li style="background: none; border: none;">
+                3. Use the buttons above to run diagnostics
+            </li>
+            <li style="background: none; border: none;">
+                4. Check the console output below for detailed logs
+            </li>
+            <li style="background: none; border: none;">
+                5. Also open browser DevTools (F12) to see native console
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Script Imports -->
+<script type="module" src="src/debug.js"></script> <!-- module handles all logic -->
+        
+        // Check 2: Logger
+        if (typeof Logger !== 'undefined') {
+            setCheck('check-logger', 'pass', 'Logger object is available');
+        } else {
+            setCheck('check-logger', 'fail', 'Logger object NOT found');
+        }
+        
+        // Check 3: Config
+        if (typeof SPOONACULAR_API_KEY !== 'undefined') {
+            setCheck('check-config', 'pass', 'Config loaded successfully');
+        } else {
+            setCheck('check-config', 'fail', 'Config NOT loaded');
+        }
+        
+        // Check 4: API Key
+        if (typeof isApiKeyValid === 'function') {
+            const isValid = isApiKeyValid();
+            if (isValid) {
+                document.getElementById('api-key-status').textContent = '✓ Valid';
+                setCheck('check-api-key', 'pass', 'API key is valid');
+            } else {
+                document.getElementById('api-key-status').textContent = '✗ Invalid';
+                setCheck('check-api-key', 'fail', 'API key is NOT valid');
+            }
+        }
+        
+        // Check 5: App State
+        if (typeof appState !== 'undefined') {
+            setCheck('check-app', 'pass', 'App state initialized');
+            addLog(`Selected ingredients: ${appState.selectedIngredients.length}`, 'info');
+            addLog(`Stored recipes: ${appState.allRecipes.length}`, 'info');
+        } else {
+            setCheck('check-app', 'fail', 'App state NOT initialized');
+        }
+        
+        // Check 6: DOM
+        if (typeof domElements !== 'undefined' && domElements.recipeGrid) {
+            const count = document.querySelectorAll('article[data-recipe-id]').length;
+            document.getElementById('dom-count').textContent = count;
+            setCheck('check-dom', 'pass', `Found ${count} recipe cards in DOM`);
+        } else {
+            setCheck('check-dom', 'fail', 'Recipe grid NOT found in DOM');
+        }
+        
+        addLog('=== DIAGNOSTICS COMPLETE ===', 'info');
+    }
+    
+    async function testApiCall() {
+        addLog('=== TESTING API CALL ===', 'info');
+        
+        if (typeof isApiKeyValid !== 'function') {
+            addLog('Cannot test: app not loaded', 'error');
+            return;
+        }
+        
+        if (!isApiKeyValid()) {
+            addLog('Cannot test: API key invalid', 'error');
+            return;
+        }
+        
+        try {
+            addLog('Making test API call...', 'info');
+            const url = `https://api.spoonacular.com/recipes/findByIngredients?apiKey=${SPOONACULAR_API_KEY}&ingredients=tomato&number=5`;
+            
+            const response = await fetch(url);
+            addLog(`Response status: ${response.status} ${response.statusText}`, 'info');
+            
+            if (!response.ok) {
+                const text = await response.text();
+                addLog(`Response error: ${text}`, 'error');
+                return;
+            }
+            
+            const data = await response.json();
+            addLog(`✓ API returned ${data.length} recipes`, 'success');
+            addLog(`Sample recipe: ${data[0]?.title || 'N/A'}`, 'info');
+        } catch (error) {
+            addLog(`API test failed: ${error.message}`, 'error');
+        }
+        
+        addLog('=== API TEST COMPLETE ===', 'info');
+    }
+    
+    // Auto run on load
+    window.addEventListener('load', function() {
+        addLog('Debug console loaded', 'success');
+        runDiagnostics();
+    });
+</script>
+</body>
+</html>

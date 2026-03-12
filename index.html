@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html class="" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cook with Bill - Recipe Finder</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Metropolis:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Enhanced Styles & Animations -->
+<link href="styles.css" rel="stylesheet"/>
+<!-- BEGIN: Tailwind Configuration -->
+<script>tailwind.config = {theme: {extend: {colors: {brand: "#ee2b8c", primary: "#198ae6", "background-light": "#f6f7f8", "background-dark": "#111a21"}, fontFamily: {sans: ["Poppins", "sans-serif"], display: "Metropolis"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}}}};</script>
+<!-- END: Tailwind Configuration -->
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="glassmorphism-ui">
+    body {
+      /* The dark overlay (0.6 opacity) ensures the white text and glass panels pop! */
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/kitchen-bg.jpg');
+      
+      /* THIS IS THE MAGIC FOR RESPONSIVE SCALING: */
+      background-size: cover;        /* Scales the image to fill the screen without stretching */
+      background-position: center;   /* Keeps the focus in the middle on phones and desktops */
+      background-attachment: fixed;  /* Keeps the background locked in place while you scroll through recipes */
+      background-repeat: no-repeat;
+      
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+      border-radius: 24px; /* <-- THIS ADDS THE BEAUTIFUL CURVES */
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-4px);
+    }
+
+    .pill-button {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pill-button.active {
+      background-color: #ee2b8c;
+      color: white;
+      box-shadow: 0 4px 12px rgba(238, 43, 140, 0.4);
+      border-color: transparent;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="p-4 md:p-8 text-white">
+<!-- BEGIN: Main App Container -->
+<main class="max-w-7xl mx-auto" data-purpose="app-wrapper">
+<!-- BEGIN: Header Section -->
+<header class="mb-8 text-center" data-purpose="page-header">
+<h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-2">Cook with Bill</h1>
+<p class="text-white/80 text-lg">Select ingredients &amp; get recipes</p>
+</header>
+<!-- END: Header Section -->
+<div class="flex flex-col md:flex-row gap-6">
+<!-- BEGIN: Ingredients Sidebar -->
+<aside class="w-full md:w-[30%] space-y-6" data-purpose="ingredients-sidebar">
+<section class="glass-panel p-6 rounded-custom h-fit">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-semibold">Ingredients</h2>
+<!-- Mobile Toggle Placeholder (if needed for small screens) -->
+</div>
+<!-- selected ingredients list -->
+<div id="selected-ingredients" class="flex flex-wrap gap-2 mb-4"></div>
+<!-- Ingredients Search -->
+<div class="relative mb-4">
+  <input id="ingredientSearch" class="w-full bg-white/10 border-white/20 rounded-full py-2.5 px-10 text-white placeholder:text-white/50 focus:ring-brand focus:border-brand" placeholder="Search..." type="text"/>
+  <svg class="w-5 h-5 absolute left-3 top-3 text-white/50" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Custom ingredient input -->
+<div class="relative mb-8">
+  <input id="customIngredient" class="w-full bg-white/10 border-white/20 rounded-full py-2.5 px-10 text-white placeholder:text-white/50 focus:ring-brand focus:border-brand" placeholder="Add ingredient..." type="text"/>
+  <svg class="w-5 h-5 absolute left-3 top-3 text-white/50" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Category: Vegetables -->
+<div class="mb-8" data-purpose="category-vegetables">
+<div class="flex items-center gap-2 mb-4 opacity-90"><span class="material-symbols-outlined text-brand">eco</span><h3 class="text-xl font-medium">Vegetables</h3></div>
+<div class="flex flex-wrap gap-2">
+<button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" data-ingredient="Tomato">Tomato</button>
+<button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" data-ingredient="Potato">Potato</button>
+<button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Onion</button>
+<button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Carrot</button>
+</div>
+</div>
+<!-- Category: Meat -->
+<div class="mb-8" data-purpose="category-meat">
+<div class="flex items-center gap-2 mb-4 opacity-90"><span class="material-symbols-outlined text-brand">set_meal</span><h3 class="text-xl font-medium">Meat</h3></div>
+<div class="flex flex-wrap gap-2">
+<button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" data-ingredient="Chicken">Chicken</button>
+<button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Mutton</button>
+<button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Beef</button>
+</div>
+</div><div class="mb-8" data-purpose="category-fruits"><div class="flex items-center gap-2 mb-4 opacity-90"><span class="material-symbols-outlined text-brand">nutrition</span><h3 class="text-xl font-medium">Fruits</h3></div><div class="flex flex-wrap gap-2"><button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Apple</button><button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Banana</button><button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Orange</button></div></div>
+<!-- Category: Seafood -->
+<div class="mb-4" data-purpose="category-seafood">
+<div class="flex items-center gap-2 mb-4 opacity-90"><span class="material-symbols-outlined text-brand">water_drop</span><h3 class="text-xl font-medium">Seafood</h3></div>
+<div class="flex flex-wrap gap-2">
+<button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Fish</button>
+<button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Prawns</button>
+</div>
+</div><div class="mb-4" data-purpose="category-pulses"><div class="flex items-center gap-2 mb-4 opacity-90"><span class="material-symbols-outlined text-brand">grain</span><h3 class="text-xl font-medium">Pulses</h3></div><div class="flex flex-wrap gap-2"><button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Lentils</button><button class="pill-button px-4 py-1.5 rounded-full border border-white/30 bg-white/5 hover:bg-white/20 text-sm" onclick="togglePill(this)">Chickpeas</button></div></div>
+</section>
+</aside>
+<!-- END: Ingredients Sidebar -->
+<!-- BEGIN: Recipe Main Panel -->
+<section class="w-full md:w-[70%]" data-purpose="recipe-display-area">
+<div class="glass-panel p-6 rounded-custom min-h-[600px]">
+<div class="mb-8">
+<h2 class="text-3xl font-bold mb-6">Recipe</h2>
+<!-- Recipe Search -->
+<div class="relative mb-8 max-w-xl">
+<input class="w-full bg-white/10 border-white/20 rounded-full py-3 px-12 text-white placeholder:text-white/50 focus:ring-brand focus:border-brand" placeholder="Search recipes..." type="text"/>
+<svg class="w-6 h-6 absolute left-4 top-3 text-white/50" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- "Do you have?" Suggestions -->
+<div class="mb-8" data-purpose="suggestions">
+<p class="text-lg font-medium mb-4">Do you have?</p>
+<div class="flex flex-wrap gap-3">
+<button class="pill-button px-5 py-2 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-sm font-medium" onclick="togglePill(this)">Cheese</button>
+<button class="pill-button px-5 py-2 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-sm font-medium" onclick="togglePill(this)">Coconut</button>
+<button class="pill-button px-5 py-2 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-sm font-medium" onclick="togglePill(this)">Butter</button>
+<button class="pill-button px-5 py-2 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-sm font-medium" onclick="togglePill(this)">Garlic</button>
+</div>
+</div>
+</div>
+<!-- BEGIN: Recipe Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-purpose="recipe-grid">
+<!-- Recipe Card 1 -->
+<article class="glass-card rounded-2xl overflow-hidden group cursor-pointer">
+<div class="h-48 bg-white/10 flex items-center justify-center overflow-hidden">
+<img alt="Boiled Egg" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsinkdswD0F7GCrumNGjvr4HeOoKQxVm29PxX52rW2jhaK2kWP72dk2lh5ohzWBKcNYj_NwrKwUQeWlzAViyj86YU7-LD7Nk70Ihr7AnlL4EtkLBkKiwhWMPKvozGGA0TjGC_kJSv7WgywYJ9KGuYDm35xwulKLsWf5owfaOSnc1S5v-HiEhOS6cvuRomkiesPYzjyJFQGLJeoVfUUJA4Ls5jemMF67QY_7lMI6qK9NOXnwzZY8SxrGLzm0r3inqYx4F63YrUkyo8"/>
+</div>
+<div class="p-4">
+<h4 class="text-lg font-semibold mb-1">Boiled Egg</h4>
+<p class="text-white/60 text-sm">Simple &amp; Nutritious</p>
+</div>
+</article>
+<!-- Recipe Card 2 -->
+<article class="glass-card rounded-2xl overflow-hidden group cursor-pointer">
+<div class="h-48 bg-white/10 flex items-center justify-center overflow-hidden">
+<img alt="Tomato Salad" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJHpPV79pHGkLzW2OW1c0SGMqO8VHgtUDdAy5aBjBbG6-OzYYECPYXjVUyEtJDOtMnQPs7HHE2RzvOKtFJIwI0Y37j2zPyenAg5i3tzbIzLACPAKpGMOe9IlRBYn3aooN_8EEadtqdKovhFuj2h8zk5MCQPahaoiOvgiyzT-xMwCgj4iBQR0Z5p1zVmOQxCMST4VzrJqc0Ekx_M03lix9GlrhJk0Ll_UKxcTSyYUh30vR94l_Z3-XvDr4fNEf-5Z7fSU6dGbYRNPg"/>
+</div>
+<div class="p-4">
+<h4 class="text-lg font-semibold mb-1">Fresh Tomato Salad</h4>
+<p class="text-white/60 text-sm">Light Mediterranean style</p>
+</div>
+</article>
+<!-- Recipe Card 3 -->
+<article class="glass-card rounded-2xl overflow-hidden group cursor-pointer">
+<div class="h-48 bg-white/10 flex items-center justify-center overflow-hidden">
+<img alt="Roast Chicken" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD45G1l4PHUAomNqNJsyZkgtdvmYPeaDWRK0J_e5AmwyRd2b0S9a7iTvHgKnvdvlObQtjGUFg9sz18rfIPjvvQkeHtxiVlsGr7bWgvKJgtb03K0qAtd24vKkvK_foXLv61bZv9jeUGnyw8bQHI1C-uo29nWIxTaeK48TiPA2R2Oj9eAO6TB6a9gTDTbY7ie6RuYwBGZV2oD4tQrPQfyFWx8dLNR7T4MNOdrK_vScaZT60-qZv9sai1g_vvm0fC2sC75HJok0EutC9A"/>
+</div>
+<div class="p-4">
+<h4 class="text-lg font-semibold mb-1">Herb Roast Chicken</h4>
+<p class="text-white/60 text-sm">Classic dinner favorite</p>
+</div>
+</article>
+<!-- Recipe Card 4 -->
+<article class="glass-card rounded-2xl overflow-hidden group cursor-pointer">
+<div class="h-48 bg-white/10 flex items-center justify-center overflow-hidden">
+<img alt="Steamed Fish" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE_vUhhtNds6mM7y1ua2cJAZlQy8zucCAriX8LhzXQFK5Az93-m_e5MYOOzzczrlTlGZeq9GxjPszobciiQNJuJJcRHOt-139ufXbpGgGDlo5EU2Lfm79UP_eUr7G0Chi_EBIohq3ss94pM5iYKAcvATSJnWPDFun3pvI82bWRdHxKOI0JCBV_sFL6IJkMFh7tJvSPfqfGpP1VrDo_5DjkBojpqXh-rmo858Q0qIKKknT25aZhuABCBpNstPS-ZPAekbKJ_FeKSms"/>
+</div>
+<div class="p-4">
+<h4 class="text-lg font-semibold mb-1">Lemon Steamed Fish</h4>
+<p class="text-white/60 text-sm">Healthy seafood delight</p>
+</div>
+</article>
+<!-- Recipe Card 5 (Empty/Placeholder style from sketch) -->
+<article class="glass-card rounded-2xl overflow-hidden group cursor-pointer border-dashed border-2 border-white/10">
+<div class="h-48 flex items-center justify-center">
+<div class="w-12 h-12 rounded-lg border-2 border-white/20 flex items-center justify-center">
+<span class="text-2xl opacity-40">+</span>
+</div>
+</div>
+<div class="p-4 text-center">
+<p class="text-white/40 text-sm">Discover more recipes...</p>
+</div>
+</article>
+</div>
+<!-- END: Recipe Grid -->
+</div>
+</section>
+<!-- END: Recipe Main Panel -->
+</div>
+</main>
+<!-- END: Main App Container -->
+
+<!-- BEGIN: Script Imports -->
+<!-- Use ES modules under Vite -->
+<script type="module" src="app.js"></script>
+<!-- END: Script Imports -->
+</body></html>

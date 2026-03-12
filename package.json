@@ -1,0 +1,17 @@
+{
+  "name": "cook-with-bill",
+  "version": "1.0.0",
+  "description": "📋 COOK WITH BILL - COMPLETE DEBUG SETUP\r ==========================================",
+  "main": "app.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^7.3.1"
+  }
+}
