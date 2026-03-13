@@ -534,32 +534,49 @@ export function getRecipesByIngredients(ingredients) {
   const results = [];
   const seenIds = new Set();
 
+  // Helper to format the recipe perfectly for the UI
+  const formatRecipe = (recipe) => ({
+    id: recipe.id,
+    title: recipe.title,
+    image: recipe.image,
+    readyInMinutes: recipe.readyInMinutes,
+    servings: recipe.servings,
+    healthScore: recipe.healthScore,
+    usedIngredients: [{ name: recipe.primaryIngredient, original: recipe.primaryIngredient }],
+    missedIngredients: [],
+    instructions: recipe.instructions.join(' '),
+    extendedIngredients: recipe.allIngredients.map(i => ({ original: i }))
+  });
+
   for (const ing of ingredients) {
     const ingLower = ing.toLowerCase();
+
+    // PASS 1: Strict Match! (This fixes the soup mix-ups)
+    // First, look ONLY for recipes where this is the main ingredient.
     for (const recipe of localRecipes) {
       if (seenIds.has(recipe.id)) continue;
       
-      // Check if ingredient matches primary or any allIngredients
-      if (recipe.primaryIngredient.toLowerCase().includes(ingLower) || 
-          recipe.allIngredients.some(i => i.toLowerCase().includes(ingLower))) {
-        // Adapt to app format
-        const adaptedRecipe = {
-          id: recipe.id,
-          title: recipe.title,
-          image: recipe.image,
-          readyInMinutes: recipe.readyInMinutes,
-          servings: recipe.servings,
-          healthScore: recipe.healthScore,
-          usedIngredients: [{ name: recipe.primaryIngredient, original: recipe.primaryIngredient }],
-          missedIngredients: [],
-          instructions: recipe.instructions.join(' '),
-          extendedIngredients: recipe.allIngredients.map(i => ({ original: i }))
-        };
-        results.push(adaptedRecipe);
+      if (recipe.primaryIngredient.toLowerCase() === ingLower) {
+        results.push(formatRecipe(recipe));
         seenIds.add(recipe.id);
         if (results.length >= 5) break;
       }
     }
+
+    // PASS 2: Fallback for minor ingredients
+    // If it's a side ingredient like "Garlic" or "Butter", search the full ingredient list.
+    if (results.length < 5) {
+      for (const recipe of localRecipes) {
+        if (seenIds.has(recipe.id)) continue;
+        
+        if (recipe.allIngredients.some(i => i.toLowerCase().includes(ingLower))) {
+          results.push(formatRecipe(recipe));
+          seenIds.add(recipe.id);
+          if (results.length >= 5) break;
+        }
+      }
+    }
+
     if (results.length >= 5) break;
   }
 
@@ -569,4 +586,3 @@ export function getRecipesByIngredients(ingredients) {
 export function getAllRecipes() {
   return localRecipes;
 }
-
